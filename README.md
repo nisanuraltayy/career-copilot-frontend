@@ -153,5 +153,4 @@ Backend reposundaki `docker-compose.yml` bu servisi otomatik dahil eder — tam 
 ---
 
 <div align="center">
-<sub>MIT lisansı · Senior frontend pratiklerini sergilemek için geliştirilmiş portfolyo projesi</sub>
 </div>
