@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { api } from "../lib/api";
 
 function CVYukle() {
   const [dosya, setDosya] = useState(null);
@@ -16,23 +17,11 @@ function CVYukle() {
     setHata(null);
     setSonuc(null);
 
-    const formData = new FormData();
-    formData.append("dosya", dosya);
-
     try {
-      const yanit = await fetch("http://127.0.0.1:8000/cv-yukle", {
-        method: "POST",
-        body: formData,
-      });
-      const veri = await yanit.json();
-
-      if (veri.hata) {
-        setHata(veri.hata);
-      } else {
-        setSonuc(veri);
-      }
+      const veri = await api.cvYukle(dosya);
+      setSonuc(veri);
     } catch (e) {
-      setHata("Sunucuya ulaşılamadı. Backend çalışıyor mu?");
+      setHata(e.message);
     } finally {
       setYukleniyor(false);
     }

@@ -1,7 +1,16 @@
-import { Link, Outlet } from "react-router-dom";
+import { Link, Outlet, useNavigate } from "react-router-dom";
 import GradientBlobs from "./GradientBlobs";
+import { useAuth } from "../lib/auth";
 
 function Layout() {
+  const { user, cikisYap } = useAuth();
+  const navigate = useNavigate();
+
+  function cikis() {
+    cikisYap();
+    navigate("/login");
+  }
+
   return (
     <div style={{
       position: "relative",
@@ -63,6 +72,17 @@ function Layout() {
             <Link to="/uyum" style={navLinkStyle}>Uyum</Link>
             <Link to="/mektup" style={navLinkStyle}>Mektup</Link>
             <Link to="/gecmis" style={navLinkStyle}>Geçmiş</Link>
+            {user?.email && (
+              <span style={{ fontSize: "13px", color: "#71717A", maxWidth: "160px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                {user.email}
+              </span>
+            )}
+            <button
+              onClick={cikis}
+              style={{ padding: "7px 14px", borderRadius: "9px", background: "rgba(255,255,255,0.06)", color: "#A1A1AA", border: "1px solid rgba(255,255,255,0.12)", fontSize: "13px", fontWeight: 600, cursor: "pointer" }}
+            >
+              Çıkış
+            </button>
           </nav>
         </div>
       </header>

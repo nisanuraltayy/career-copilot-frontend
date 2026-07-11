@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { api } from "../lib/api";
 
 function MotivasyonMektubu() {
   const [cvler, setCvler] = useState([]);
@@ -12,16 +13,14 @@ function MotivasyonMektubu() {
   useEffect(() => {
     async function listeleriYukle() {
       try {
-        const [cvYanit, ilanYanit] = await Promise.all([
-          fetch("http://127.0.0.1:8000/cv-gecmis"),
-          fetch("http://127.0.0.1:8000/is-ilanlari"),
+        const [cvVeri, ilanVeri] = await Promise.all([
+          api.cvGecmis(),
+          api.ilanlar(),
         ]);
-        const cvVeri = await cvYanit.json();
-        const ilanVeri = await ilanYanit.json();
         setCvler(cvVeri.kayitlar || []);
         setIlanlar(ilanVeri.ilanlar || []);
       } catch (e) {
-        setHata("Listeler yüklenemedi.");
+        setHata(e.message);
       }
     }
     listeleriYukle();
@@ -38,23 +37,10 @@ function MotivasyonMektubu() {
     setSonuc(null);
 
     try {
-      const yanit = await fetch("http://127.0.0.1:8000/motivasyon-mektubu", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          cv_id: parseInt(secilenCv),
-          is_ilani_id: parseInt(secilenIlan),
-        }),
-      });
-      const veri = await yanit.json();
-
-      if (veri.hata) {
-        setHata(veri.hata);
-      } else {
-        setSonuc(veri);
-      }
+      const veri = await api.mektupUret(parseInt(secilenCv), parseInt(secilenIlan));
+      setSonuc(veri);
     } catch (e) {
-      setHata("Sunucuya ulaşılamadı.");
+      setHata(e.message);
     } finally {
       setYukleniyor(false);
     }

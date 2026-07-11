@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { api } from "../lib/api";
 
 function IsIlani() {
   const [metin, setMetin] = useState("");
@@ -17,20 +18,10 @@ function IsIlani() {
     setSonuc(null);
 
     try {
-      const yanit = await fetch("http://127.0.0.1:8000/is-ilani-analiz", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ metin: metin }),
-      });
-      const veri = await yanit.json();
-
-      if (veri.hata) {
-        setHata(veri.hata);
-      } else {
-        setSonuc(veri);
-      }
+      const veri = await api.ilanAnaliz(metin);
+      setSonuc(veri);
     } catch (e) {
-      setHata("Sunucuya ulaşılamadı. Backend çalışıyor mu?");
+      setHata(e.message);
     } finally {
       setYukleniyor(false);
     }

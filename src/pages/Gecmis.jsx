@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { api } from "../lib/api";
 
 function Gecmis() {
   const [aktifTab, setAktifTab] = useState("cv");
@@ -12,24 +13,19 @@ function Gecmis() {
   useEffect(() => {
     async function tumGecmisleriYukle() {
       try {
-        const [cvY, ilanY, uyumY, mektupY] = await Promise.all([
-          fetch("http://127.0.0.1:8000/cv-gecmis"),
-          fetch("http://127.0.0.1:8000/is-ilanlari"),
-          fetch("http://127.0.0.1:8000/uyum-analizi-gecmis"),
-          fetch("http://127.0.0.1:8000/motivasyon-mektubu-gecmis"),
+        const [cvV, ilanV, uyumV, mektupV] = await Promise.all([
+          api.cvGecmis(),
+          api.ilanlar(),
+          api.uyumGecmis(),
+          api.mektupGecmis(),
         ]);
-
-        const cvV = await cvY.json();
-        const ilanV = await ilanY.json();
-        const uyumV = await uyumY.json();
-        const mektupV = await mektupY.json();
 
         setCvler(cvV.kayitlar || []);
         setIlanlar(ilanV.ilanlar || []);
         setUyumlar(uyumV.analizler || uyumV.kayitlar || []);
         setMektuplar(mektupV.mektuplar || mektupV.kayitlar || []);
       } catch (e) {
-        setHata("Geçmiş yüklenemedi. Backend çalışıyor mu?");
+        setHata(e.message);
       } finally {
         setYukleniyor(false);
       }
@@ -114,7 +110,7 @@ function Gecmis() {
               <KartSatir>
                 {cv.sayfa_sayisi} sayfa · {cv.karakter_sayisi} karakter
               </KartSatir>
-              <KartTarih>{cv.yukleme_tarihi}</KartTarih>
+              <KartTarih>{tarihGoster(cv.created_at)}</KartTarih>
             </Kart>
           )}
         />
@@ -127,7 +123,7 @@ function Gecmis() {
             <Kart key={ilan.id}>
               <KartBaslik>#{ilan.id} — {ilan.pozisyon_adi || "?"}</KartBaslik>
               <KartSatir>{ilan.sirket_adi} · {ilan.deneyim_yili}</KartSatir>
-              <KartTarih>{ilan.eklenme_tarihi}</KartTarih>
+              <KartTarih>{tarihGoster(ilan.created_at)}</KartTarih>
             </Kart>
           )}
         />
@@ -146,7 +142,7 @@ function Gecmis() {
                 {" · "}
                 V2: <strong style={{ color: "#22C55E" }}>{u.v2_sonuc?.uyum_yuzdesi ?? (u.v2_sonuc?.hata ? "hata" : "?")}{u.v2_sonuc?.uyum_yuzdesi !== undefined ? "%" : ""}</strong>
               </KartSatir>
-              <KartTarih>{u.olusturma_tarihi}</KartTarih>
+              <KartTarih>{tarihGoster(u.created_at)}</KartTarih>
             </Kart>
           )}
         />
@@ -170,13 +166,20 @@ function Gecmis() {
               }}>
                 {(m.mektup_metni || "").substring(0, 200)}...
               </KartSatir>
-              <KartTarih>{m.olusturma_tarihi}</KartTarih>
+              <KartTarih>{tarihGoster(m.created_at)}</KartTarih>
             </Kart>
           )}
         />
       )}
     </div>
   );
+}
+
+// Backend ISO 8601 (timezone-aware) döndürür; okunaklı yerel biçime çevir.
+function tarihGoster(iso) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  return isNaN(d.getTime()) ? iso : d.toLocaleString("tr-TR");
 }
 
 function Liste({ kayitlar, renderKart }) {

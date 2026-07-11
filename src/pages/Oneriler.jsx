@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { api } from "../lib/api";
 
 function Oneriler() {
   const [cvler, setCvler] = useState([]);
@@ -10,11 +11,10 @@ function Oneriler() {
   useEffect(() => {
     async function cvleriYukle() {
       try {
-        const yanit = await fetch("http://127.0.0.1:8000/cv-gecmis");
-        const veri = await yanit.json();
+        const veri = await api.cvGecmis();
         setCvler(veri.kayitlar || []);
       } catch (e) {
-        setHata("CV listesi yüklenemedi. Backend çalışıyor mu?");
+        setHata(e.message);
       }
     }
     cvleriYukle();
@@ -31,19 +31,10 @@ function Oneriler() {
     setSonuc(null);
 
     try {
-      const yanit = await fetch(
-        `http://127.0.0.1:8000/is-onerileri/${parseInt(secilenCv)}`
-      );
-      const veri = await yanit.json();
-
-      if (veri.detail) {
-        // FastAPI HTTPException "detail" doner (404/400)
-        setHata(typeof veri.detail === "string" ? veri.detail : "Öneri alınamadı.");
-      } else {
-        setSonuc(veri);
-      }
+      const veri = await api.isOnerileri(parseInt(secilenCv));
+      setSonuc(veri);
     } catch (e) {
-      setHata("Sunucuya ulaşılamadı.");
+      setHata(e.message);
     } finally {
       setYukleniyor(false);
     }
