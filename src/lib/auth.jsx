@@ -10,8 +10,9 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import {
   api,
+  clearTokens,
   getToken,
-  setToken,
+  setTokens,
   setUnauthorizedHandler,
 } from "./api";
 
@@ -35,7 +36,7 @@ export function AuthProvider({ children }) {
         if (!iptal) setUser(u);
       } catch {
         if (!iptal) {
-          setToken(null);
+          clearTokens();
           setTok(null);
           setUser(null);
         }
@@ -59,23 +60,21 @@ export function AuthProvider({ children }) {
   }, []);
 
   async function girisYap(email, parola) {
-    const { access_token } = await api.login(email, parola);
-    setToken(access_token);
-    setTok(access_token);
-    const u = await api.me();
-    setUser(u);
+    const tokenlar = await api.login(email, parola);
+    setTokens(tokenlar);
+    setTok(tokenlar.access_token);
+    setUser(await api.me());
   }
 
   async function kayitOl(email, parola) {
-    const { access_token } = await api.register(email, parola);
-    setToken(access_token);
-    setTok(access_token);
-    const u = await api.me();
-    setUser(u);
+    const tokenlar = await api.register(email, parola);
+    setTokens(tokenlar);
+    setTok(tokenlar.access_token);
+    setUser(await api.me());
   }
 
   function cikisYap() {
-    setToken(null);
+    clearTokens();
     setTok(null);
     setUser(null);
   }

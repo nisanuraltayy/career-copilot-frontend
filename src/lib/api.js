@@ -12,23 +12,66 @@ const BASE_URL = (
 ).replace(/\/$/, "");
 
 const TOKEN_KEY = "cc_token";
+const REFRESH_KEY = "cc_refresh";
 
 // --- Token deposu (localStorage) ---
-export function getToken() {
+function _get(key) {
   try {
-    return localStorage.getItem(TOKEN_KEY);
+    return localStorage.getItem(key);
   } catch {
     return null;
   }
 }
-
-export function setToken(token) {
+function _set(key, value) {
   try {
-    if (token) localStorage.setItem(TOKEN_KEY, token);
-    else localStorage.removeItem(TOKEN_KEY);
+    if (value) localStorage.setItem(key, value);
+    else localStorage.removeItem(key);
   } catch {
     // localStorage erişilemezse sessizce geç (ör. gizli mod).
   }
+}
+
+export const getToken = () => _get(TOKEN_KEY);
+export const setToken = (t) => _set(TOKEN_KEY, t);
+export const getRefreshToken = () => _get(REFRESH_KEY);
+export const setRefreshToken = (t) => _set(REFRESH_KEY, t);
+
+/** Her iki token'ı yazar (login/register/refresh sonrası). */
+export function setTokens({ access_token, refresh_token }) {
+  setToken(access_token);
+  setRefreshToken(refresh_token);
+}
+
+/** Oturumu tamamen temizler. */
+export function clearTokens() {
+  setToken(null);
+  setRefreshToken(null);
+}
+
+// Eşzamanlı 401'lerde tek bir refresh çağrısı yapılsın diye paylaşılan promise.
+let _refreshPromise = null;
+function _yenile() {
+  if (!getRefreshToken()) return Promise.resolve(false);
+  if (!_refreshPromise) {
+    _refreshPromise = (async () => {
+      try {
+        const res = await fetch(`${BASE_URL}/auth/refresh`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ refresh_token: getRefreshToken() }),
+        });
+        if (!res.ok) return false;
+        const veri = await res.json();
+        setTokens(veri);
+        return true;
+      } catch {
+        return false;
+      } finally {
+        _refreshPromise = null;
+      }
+    })();
+  }
+  return _refreshPromise;
 }
 
 // 401 olduğunda oturumu temizlemek için dinleyici (AuthProvider bağlanır).
@@ -46,7 +89,8 @@ export class ApiError extends Error {
   }
 }
 
-async function request(path, { method = "GET", body, isForm = false } = {}) {
+async function request(path, opts = {}, _yenilendiMi = false) {
+  const { method = "GET", body, isForm = false } = opts;
   const headers = {};
   if (!isForm && body != null) headers["Content-Type"] = "application/json";
   const token = getToken();
@@ -67,6 +111,18 @@ async function request(path, { method = "GET", body, isForm = false } = {}) {
     });
   }
 
+  // 401: access token süresi dolmuş olabilir. Refresh token varsa BİR KEZ
+  // yenileyip isteği tekrar dene (kullanıcı fark etmeden oturum sürer).
+  if (
+    res.status === 401 &&
+    !_yenilendiMi &&
+    path !== "/auth/refresh" &&
+    getRefreshToken()
+  ) {
+    const ok = await _yenile();
+    if (ok) return request(path, opts, true);
+  }
+
   let veri = null;
   try {
     veri = await res.json();
@@ -75,9 +131,9 @@ async function request(path, { method = "GET", body, isForm = false } = {}) {
   }
 
   if (!res.ok) {
-    // 401: token geçersiz/süresi dolmuş -> oturumu temizle.
+    // 401 ve yenileme de başarısız -> oturumu tamamen temizle.
     if (res.status === 401) {
-      setToken(null);
+      clearTokens();
       if (_onUnauthorized) _onUnauthorized();
     }
     // Yeni backend sözleşmesi: { error: { code, message } }.
@@ -101,6 +157,11 @@ export const api = {
   login: (email, parola) =>
     request("/auth/login", { method: "POST", body: { email, parola } }),
   me: () => request("/auth/me"),
+  parolaDegistir: (eski_parola, yeni_parola) =>
+    request("/auth/change-password", {
+      method: "POST",
+      body: { eski_parola, yeni_parola },
+    }),
 
   // CV
   cvYukle(file) {
