@@ -171,7 +171,7 @@ function OneriKarti({ oneri }) {
         <div style={{ fontSize: "32px", fontWeight: 800, color: renk, lineHeight: 1 }}>
           %{skor}
         </div>
-        <div style={{ fontSize: "12px", color: "#71717A", marginTop: "4px" }}>
+        <div style={{ fontSize: "12px", color: "#8A8A94", marginTop: "4px" }}>
           uyum
         </div>
       </div>

@@ -238,7 +238,7 @@ function KartSatir({ children, style }) {
 function KartTarih({ children }) {
   return (
     <div style={{
-      color: "#71717A",
+      color: "#8A8A94",
       fontSize: "11px",
       marginTop: "8px",
       fontFamily: "monospace",

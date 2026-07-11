@@ -1,4 +1,4 @@
-import { Link, Outlet, useNavigate } from "react-router-dom";
+import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
 import GradientBlobs from "./GradientBlobs";
 import { useAuth } from "../lib/auth";
 
@@ -37,6 +37,8 @@ function Layout() {
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
+          flexWrap: "wrap",
+          gap: "12px",
         }}>
           <Link to="/" style={{
             display: "flex",
@@ -65,24 +67,15 @@ function Layout() {
             }}>Career Copilot</span>
           </Link>
 
-          <nav style={{ display: "flex", gap: "20px", alignItems: "center" }}>
-            <Link to="/cv" style={navLinkStyle}>CV</Link>
-            <Link to="/ilan" style={navLinkStyle}>İlan</Link>
-            <Link to="/oneriler" style={navLinkStyle}>Öneriler</Link>
-            <Link to="/uyum" style={navLinkStyle}>Uyum</Link>
-            <Link to="/mektup" style={navLinkStyle}>Mektup</Link>
-            <Link to="/gecmis" style={navLinkStyle}>Geçmiş</Link>
-            {user?.email && (
-              <span style={{ fontSize: "13px", color: "#71717A", maxWidth: "160px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                {user.email}
-              </span>
-            )}
-            <button
-              onClick={cikis}
-              style={{ padding: "7px 14px", borderRadius: "9px", background: "rgba(255,255,255,0.06)", color: "#A1A1AA", border: "1px solid rgba(255,255,255,0.12)", fontSize: "13px", fontWeight: 600, cursor: "pointer" }}
-            >
-              Çıkış
-            </button>
+          <nav className="site-nav">
+            <NavLink to="/cv" className="nav-link">CV</NavLink>
+            <NavLink to="/ilan" className="nav-link">İlan</NavLink>
+            <NavLink to="/oneriler" className="nav-link">Öneriler</NavLink>
+            <NavLink to="/uyum" className="nav-link">Uyum</NavLink>
+            <NavLink to="/mektup" className="nav-link">Mektup</NavLink>
+            <NavLink to="/gecmis" className="nav-link">Geçmiş</NavLink>
+            {user?.email && <span className="user-email">{user.email}</span>}
+            <button onClick={cikis} className="logout-btn">Çıkış</button>
           </nav>
         </div>
       </header>
@@ -99,12 +92,5 @@ function Layout() {
     </div>
   );
 }
-
-const navLinkStyle = {
-  fontSize: "14px",
-  fontWeight: 600,
-  color: "#A1A1AA",
-  textDecoration: "none",
-};
 
 export default Layout;

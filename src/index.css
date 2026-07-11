@@ -1,3 +1,25 @@
+/* ============================================================
+   Design tokens — tek doğruluk kaynağı.
+   Renkleri buradan değiştir; tüm uygulama uyum sağlar.
+   ============================================================ */
+:root {
+  --bg: #0A0A0F;
+  --surface: rgba(255, 255, 255, 0.04);
+  --surface-2: rgba(255, 255, 255, 0.06);
+  --border: rgba(255, 255, 255, 0.1);
+
+  --text: #FAFAFA;
+  --muted: #A1A1AA;   /* ikincil metin — koyu zeminde AA geçer */
+  --muted-2: #8A8A94; /* dekoratif/çok ikincil (tarih vb.) — zinc-500'den daha okunur */
+
+  --accent-1: #6366F1; /* indigo */
+  --accent-2: #A855F7; /* violet  */
+  --accent-grad: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+
+  --danger: #FCA5A5;
+  --radius: 12px;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -7,10 +29,11 @@ html, body, #root {
   padding: 0;
   width: 100%;
   min-height: 100vh;
-  background: #0A0A0F;
-  color: #FAFAFA;
+  background: var(--bg);
+  color: var(--text);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 a {
@@ -23,4 +46,104 @@ button {
 
 ::selection {
   background: rgba(168, 85, 247, 0.35);
+}
+
+/* ---- Erişilebilirlik: görünür klavye focus (inline stil yapamaz) ---- */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--accent-2);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* ---- Butonlara hover/active geri bildirimi (inline background'ı bozmadan) ---- */
+button {
+  transition: filter 0.15s ease, transform 0.06s ease;
+}
+button:not(:disabled):hover {
+  filter: brightness(1.08);
+}
+button:not(:disabled):active {
+  transform: translateY(1px);
+}
+
+/* Hareket hassasiyeti olan kullanıcılara saygı. */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* ============================================================
+   Header / nav — pseudo-class + responsive için CSS'te.
+   ============================================================ */
+.site-nav {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.nav-link {
+  position: relative;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+  text-decoration: none;
+  padding: 4px 0;
+  transition: color 0.15s ease;
+}
+.nav-link:hover {
+  color: var(--text);
+}
+.nav-link.active {
+  color: var(--text);
+}
+/* Aktif sayfa göstergesi — gradient alt çizgi. */
+.nav-link.active::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -6px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--accent-grad);
+}
+
+.user-email {
+  font-size: 13px;
+  color: var(--muted);
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.logout-btn {
+  padding: 7px 14px;
+  border-radius: 9px;
+  background: var(--surface-2);
+  color: var(--muted);
+  border: 1px solid var(--border);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.logout-btn:hover {
+  color: var(--text);
+}
+
+/* Mobil: e-postayı gizle, nav aralığını sıkılaştır. */
+@media (max-width: 720px) {
+  .site-nav {
+    gap: 14px;
+  }
+  .user-email {
+    display: none;
+  }
 }
